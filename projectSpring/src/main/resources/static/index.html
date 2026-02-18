@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Communication Syst
+<button type="button" onclick="openTab('email')">Email</button>
+<button type="button" onclick="openTab('sms')">SMS</button>
+<button type="button" onclick="openTab('whatsapp')">WhatsApp</button>
+
+<hr>
+
+<!-- ================= EMAIL SECTION ================= -->
+<div id="emailSection" style="display:none">
+
+    <button type="button" onclick="showForm('emailForm')">Send Email</button>
+
+    <div id="emailForm" style="display:none">
+        <h3>Email Form</h3>
+        <form onsubmit="addEmail(event)">
+            Email To:
+            <input type="email" id="emailTo" required>
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <h3>Email List</h3>
+    <table border="1">
+        <tr>
+            <th>S.No</th>
+            <th>Email Sent To</th>
+            <th>Timestamp</th>
+        </tr>
+        <tbody id="emailTable"></tbody>
+    </table>
+</div>
+
+<!-- ================= SMS SECTION ================= -->
+<div id="smsSection" style="display:none">
+
+    <button type="button" onclick="showForm('smsForm')">Send SMS</button>
+
+    <div id="smsForm" style="display:none">
+        <h3>SMS Form</h3>
+        <form onsubmit="addSms(event)">
+            Mobile Number:
+            <input type="text" id="smsMobile" required>
+            <br><br>
+            Message:
+            <br>
+            <textarea id="smsMessage" required></textarea>
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <h3>SMS List</h3>
+    <table border="1">
+        <tr>
+            <th>S.No</th>
+            <th>Mobile</th>
+            <th>Message</th>
+            <th>Timestamp</th>
+        </tr>
+        <tbody id="smsTable"></tbody>
+    </table>
+</div>
+
+<!-- ================= WHATSAPP SECTION ================= -->
+<div id="whatsappSection" style="display:none">
+
+    <button type="button" onclick="showForm('waForm')">Send WhatsApp</button>
+
+    <div id="waForm" style="display:none">
+        <h3>WhatsApp Form</h3>
+        <form onsubmit="addWhatsapp(event)">
+            Mobile Number:
+            <input type="text" id="waMobile" required>
+            <br><br>
+            Message:
+            <br>
+            <textarea id="waMessage" required></textarea>
+            <br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <h3>WhatsApp List</h3>
+    <table border="1">
+        <tr>
+            <th>S.No</th>
+            <th>Mobile</th>
+            <th>Message</th>
+            <th>Timestamp</th>
+        </tr>
+        <tbody id="waTable"></tbody>
+    </table>
+</div>
+
+<script>
+function openTab(type) {
+    document.getElementById("emailSection").style.display = "none";
+    document.getElementById("smsSection").style.display = "none";
+    document.getElementById("whatsappSection").style.display = "none";
+
+    document.getElementById("emailForm").style.display = "none";
+    document.getElementById("smsForm").style.display = "none";
+    document.getElementById("waForm").style.display = "none";
+
+    if (type === "email") document.getElementById("emailSection").style.display = "block";
+    if (type === "sms") document.getElementById("smsSection").style.display = "block";
+    if (type === "whatsapp") document.getElementById("whatsappSection").style.display = "block";
+}
+
+function showForm(formId) {
+    document.getElementById("emailForm").style.display = "none";
+    document.getElementById("smsForm").style.display = "none";
+    document.getElementById("waForm").style.display = "none";
+    document.getElementById(formId).style.display = "block";
+}
+
+// ---------- POST METHODS ----------
+function addEmail(e) {
+    e.preventDefault();
+    const emailTo = document.getElementById("emailTo").value;
+
+    fetch(`/api/email?emailTo=${encodeURIComponent(emailTo)}`, { method: "POST" })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById("emailTo").value = "";
+            loadEmails();
+        })
+        .catch(err => console.error("Email error:", err));
+}
+
+function addSms(e) {
+    e.preventDefault();
+    const mobile = document.getElementById("smsMobile").value;
+    const message = document.getElementById("smsMessage").value;
+
+    fetch(`/api/sms?mobile=${mobile}&message=${encodeURIComponent(message)}`, { method: "POST" })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById("smsMobile").value = "";
+            document.getElementById("smsMessage").value = "";
+            loadSms();
+        })
+        .catch(err => console.error("SMS error:", err));
+}
+
+function addWhatsapp(e) {
+    e.preventDefault();
+    const mobile = document.getElementById("waMobile").value;
+    const message = document.getElementById("waMessage").value;
+
+    fetch(`/api/whatsapp?mobile=${mobile}&message=${encodeURIComponent(message)}`, { method: "POST" })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById("waMobile").value = "";
+            document.getElementById("waMessage").value = "";
+            loadWhatsapp();
+        })
+        .catch(err => console.error("WhatsApp error:", err));
+}
+
+// ---------- LOAD METHODS ----------
+function loadEmails() {
+    fetch("/api/emails")
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById("emailTable");
+            table.innerHTML = "";
+            data.forEach((e, i) => {
+                table.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${e.emailsentto}</td>
+                    <td>${e.sentOn}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => console.error("Email load error:", err));
+}
+
+function loadSms() {
+    fetch("/api/sms")
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById("smsTable");
+            table.innerHTML = "";
+            data.forEach((s, i) => {
+                table.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${s.mobilenumber}</td>
+                    <td>${s.messagesent}</td>
+                    <td>${s.sentOn}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => console.error("SMS load error:", err));
+}
+
+function loadWhatsapp() {
+    fetch("/api/whatsapp")
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById("waTable");
+            table.innerHTML = "";
+            data.forEach((w, i) => {
+                table.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${w.mobilenumber}</td>
+                    <td>${w.messagesent}</td>
+                    <td>${w.senton}</td>
+                </tr>`;
+            });
+        })
+        .catch(err => console.error("WhatsApp load error:", err));
+}
+
+window.onload = function () {
+    openTab("email");
+    loadEmails();
+    loadSms();
+    loadWhatsapp();
+};
+</script>
+
+
+    </body>
+</html>
